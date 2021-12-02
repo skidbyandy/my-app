@@ -1,38 +1,124 @@
-.App {
-  text-align: center;
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,700");
+* {
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+body {
+  background: #353535;
+  color: #c4c4c4;
+  font-family: "Raleway", sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.45;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sidebar {
+  background: #4f4f4f;
+  flex: 1 1 20%;
+  min-width: 100vw;
+  padding: 3em;
+}
+
+.logo {
+  text-transform: uppercase;
+  margin-bottom: 2em;
+}
+@media (min-width: 1500px) {
+  .logo {
+    margin-bottom: 5em;
+  }
+}
+.logo span {
+  font-weight: 700;
+}
+
+.nav-item {
+  color: #737373;
+  text-decoration: none;
+  font-size: 1.7rem;
+  display: inline-block;
+  margin-right: 2rem;
+}
+@media (min-width: 1500px) {
+  .nav-item {
+    display: block;
+    margin: 7vh 0;
+  }
+}
+.nav-item.active {
+  color: #c4c4c4;
+}
+
+.main-content {
+  padding: 10%;
+  flex: 1 1 80%;
+  min-height: 100vh;
+}
+
+.portfolio {
+  display: grid;
+  height: 100%;
+  grid-template-rows: repeat(8, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 20px;
+}
+
+.portfolio-item {
+  background: #f96855;
+  color: #c4c4c4;
+  font-weight: 700;
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  font-size: 1.5em;
+  background-size: cover;
+  background-position: top left;
+  transition: all ease-in-out 300ms;
+  position: relative;
+  z-index: 10;
+}
+.portfolio-item.small {
+  grid-row: span 1;
+  grid-column: span 1;
+}
+.portfolio-item.medium {
+  grid-row: span 2;
+  grid-column: span 2;
+}
+.portfolio-item.large {
+  grid-row: span 3;
+  grid-column: span 3;
+}
+.portfolio-item.tall {
+  grid-row: span 3;
+  grid-column: span 2;
+}
+.portfolio-item.wide {
+  grid-row: span 2;
+  grid-column: span 3;
+}
+.portfolio-item:hover {
   color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.85);
 }
 
-.App-link {
-  color: #61dafb;
+.two {
+  background-image: url(//unsplash.it/800/600);
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.two::before {
+  content: "";
+  display: block;
+  background: #353535;
+  opacity: 0.8;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: all ease-in-out 300ms;
+  z-index: -1;
+}
+.two:hover::before {
+  opacity: 0.2;
 }

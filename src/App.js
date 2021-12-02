@@ -1,31 +1,38 @@
+import React, {Component} from "react"
 import logo from './logo.svg';
-import './App.css';
+//import './App.css';
+//https://drive.google.com/u/1/uc?id=10MTjV9pEvFEOwas7FAaw2_ZMRTF5M4nB&export=download
+import * as tf from '@tensorflow/tfjs';
+//https://drive.google.com/u/0/uc?id=1axaZixjs1KtZtUd1lKz1j2V0owMneC_v&export=download
+class App extends Component {
 
-function App() {
-  return (
-<div class="sidebar">
-  <div class="logo">Awesome<span>Portfolio</span></div>
-  <nav>
-    <a href="" class="nav-item">Home</a>
-    <a href="" class="nav-item">About</a>
-    <a href="" class="nav-item active">Portfolio</a>
-    <a href="" class="nav-item">Contact</a>
-  </nav>
-</div>
+  async loadModel(){
+    let jsonUploads  = document.getElementById("jsonuploads").files
+    let shardUploads = document.getElementById("sharduploads").files
+    let concatArray = Array.from(jsonUploads).concat(Array.from(shardUploads));
+    console.log(concatArray)
+    const model = await tf.loadLayersModel(tf.io.browserFiles(concatArray));
+    console.log(model)
+  }
 
-<div class="main-content">
-  <div class="portfolio">
-    <div class="portfolio-item medium">one</div>
-    <div class="portfolio-item large two">two</div>
-    <div class="portfolio-item medium">three</div>
-    <div class="portfolio-item small">four</div>
-    <div class="portfolio-item tall">five</div>
-    <div class="portfolio-item wide">six</div>
-    <div class="portfolio-item wide">six</div>
-    <div class="portfolio-item medium">one</div>
-  </div>
-</div>
-  );
+  render(){
+    return (
+      <div class="sidebar">
+        <div>
+          <input type="file" id="jsonuploads" title="your text" webkitdirectory="" directory="" />
+          <input type="file" id="sharduploads" title="your text" webkitdirectory="" directory="" />
+          <button onClick={this.loadModel}>submit</button>
+          <nav>
+            <div class="logo">Awesome<span>Portfolio</span></div>
+            <a href="" class="nav-item">Home</a>
+            <a href="" class="nav-item">About</a>
+            <a href="" class="nav-item active">Portfolio</a>
+            <a href="" class="nav-item">Contact</a>
+          </nav>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
