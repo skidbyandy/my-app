@@ -9,9 +9,14 @@ class App extends Component {
     super()
     this.state={
       imguploaded: false,
-      picurl: undefined
+      picurl: undefined,
+      tensor: undefined,
+      model: undefined
     }
     this.loadPic=this.loadPic.bind(this)
+    this.getTensor=this.getTensor.bind(this)
+    this.loadModel=this.loadModel.bind(this)
+    this.predict=this.predict.bind(this)
   }
 
   async loadModel(){
@@ -20,9 +25,10 @@ class App extends Component {
     let concatArray = Array.from(jsonUploads).concat(Array.from(shardUploads));
     console.log(concatArray)
     const model = await tf.loadLayersModel(tf.io.browserFiles(concatArray));
+    this.setState({model: model})
     console.log(model)
   }
-  async loadPic(){
+  loadPic(){
     console.log("loading")
     this.setState({
       picurl: URL.createObjectURL(document.getElementById("picuploads").files[0])
@@ -30,9 +36,22 @@ class App extends Component {
     console.log(this.state)
     this.setState({imguploaded: true})
   }
-  async getTensor(){
-    const output = tf.browser.fromPixels(document.getElementById("pic"));
+
+  getTensor(){
+    let output = tf.browser.fromPixels(document.getElementById("pic")).resizeBilinear([64,64]);
+    const rgb = tf.tensor1d([0.2989, 0.587, 0.114])
+    output= tf.sum(output.mul(rgb), 2).expandDims(-1).expandDims(0)
+    this.setState({tensor: output})
     console.log(output)
+  }
+
+  predict(){
+    let model=this.state.model
+    let predict=model.predict(this.state.tensor)
+    let predictarray=predict.array()
+    let predictarray2=tf.tensor.array(predict)
+    console.log(predictarray)
+    console.log(predictarray2)
   }
 
   render(){
@@ -50,6 +69,7 @@ class App extends Component {
           <button onClick={this.loadModel}>loadModel</button>
           <button onClick={this.loadPic}>loadPic</button>
           <button onClick={this.getTensor}>getTensor</button>
+          <button onClick={this.predict}>predict</button>
           <nav>
             <div className="logo">Awesome<span>Portfolio</span></div>
             <a href="" className="nav-item">Home</a>
