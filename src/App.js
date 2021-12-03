@@ -12,12 +12,16 @@ class App extends Component {
       picurl: undefined,
       tensor: undefined,
       model: undefined,
-      predictarray: undefined
+      predictarray: undefined,
+      test: undefined,
+      test2: undefined,
+      test3: undefined
     }
     this.loadPic=this.loadPic.bind(this)
     this.getTensor=this.getTensor.bind(this)
     this.loadModel=this.loadModel.bind(this)
     this.predict=this.predict.bind(this)
+    this.test= this.test.bind(this)
   }
 
   async loadModel(){
@@ -27,7 +31,7 @@ class App extends Component {
     console.log(concatArray)
     const model = await tf.loadLayersModel(tf.io.browserFiles(concatArray));
     this.setState({model: model})
-    console.log(model)
+    console.log(model.summary())
   }
   loadPic(){
     console.log("loading")
@@ -38,12 +42,13 @@ class App extends Component {
     this.setState({imguploaded: true})
   }
 
-  getTensor(){
+  async getTensor(){
     let output = tf.browser.fromPixels(document.getElementById("pic")).resizeBilinear([64,64]);
     const rgb = tf.tensor1d([0.2989, 0.587, 0.114])
     output= tf.sum(output.mul(rgb), 2).expandDims(-1).expandDims(0)
     this.setState({tensor: output})
-    console.log(output)
+    let outputArray=await output.array()
+    console.log(outputArray[0])
   }
 
   async predict(){
@@ -54,9 +59,35 @@ class App extends Component {
     console.log(predictarray)
   }
 
+  async scorecam(){
+    let model=this.state.model
+    //let act_map_array = tf.model(inputs: model.input, outputs: model.getLayer("add_5").output)
+  }
+
+  test()
+  {
+    let model=this.state.model
+    try{
+      let act_map= tf.model({inputs: model.input, outputs: model.getLayer("add_5").output}).predict(this.state.tensor)
+      this.setState({test: act_map})
+    }catch(error){
+      console.log(error)
+    }
+    try{
+      this.setState({test2: model.input})
+    }catch(error){
+      console.log(error)
+    }
+    try{
+      this.setState({test3: model.getLayer("add_5")})
+    }catch(error){
+      console.log(error)
+    }
+  }
+
   render(){
     return (
-      <div className="sidebar">
+      <div className="dev">
         <div>
         {
           this.state.imguploaded ?
@@ -70,13 +101,8 @@ class App extends Component {
           <button onClick={this.loadPic}>loadPic</button>
           <button onClick={this.getTensor}>getTensor</button>
           <button onClick={this.predict}>predict</button>
-          <nav>
-            <div className="logo">Awesome<span>Portfolio</span></div>
-            <a href="" className="nav-item">Home</a>
-            <a href="" className="nav-item">About</a>
-            <a href="" className="nav-item active">Portfolio</a>
-            <a href="" className="nav-item">Contact</a>
-          </nav>
+          <button onClick={this.test}>test</button>
+          {this.state.predictarray!=undefined ?  <h1>{this.state.predictarray}</h1> : null}
         </div>
       </div>
     );
