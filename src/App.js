@@ -11,7 +11,8 @@ class App extends Component {
       imguploaded: false,
       picurl: undefined,
       tensor: undefined,
-      model: undefined
+      model: undefined,
+      predictarray: undefined
     }
     this.loadPic=this.loadPic.bind(this)
     this.getTensor=this.getTensor.bind(this)
@@ -45,13 +46,12 @@ class App extends Component {
     console.log(output)
   }
 
-  predict(){
+  async predict(){
     let model=this.state.model
     let predict=model.predict(this.state.tensor)
-    let predictarray=predict.array()
-    let predictarray2=tf.tensor.array(predict)
+    let predictarray=await predict.array()
+    this.setState({predictarray: predictarray})
     console.log(predictarray)
-    console.log(predictarray2)
   }
 
   render(){
