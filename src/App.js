@@ -13,6 +13,7 @@ class App extends Component {
       tensor: undefined,
       model: undefined,
       predictarray: undefined,
+      actmap: undefined,
       test: undefined,
       test2: undefined,
       test3: undefined
@@ -21,6 +22,7 @@ class App extends Component {
     this.getTensor=this.getTensor.bind(this)
     this.loadModel=this.loadModel.bind(this)
     this.predict=this.predict.bind(this)
+    this.activationMap=this.activationMap.bind(this)
     this.test= this.test.bind(this)
   }
 
@@ -64,16 +66,23 @@ class App extends Component {
     //let act_map_array = tf.model(inputs: model.input, outputs: model.getLayer("add_5").output)
   }
 
+  async activationMap(){
+    let model=this.state.model
+    let actMap= await tf.model({inputs: model.input, outputs: model.getLayer("add_5").output}).predict(this.state.tensor)
+    let actMapResized= tf.image.resizeBilinear(actMap,[64,64])
+    this.setState({actmap: actMapResized})
+  }
+
   test()
   {
     let model=this.state.model
     try{
-      let act_map= tf.model({inputs: model.input, outputs: model.getLayer("add_5").output}).predict(this.state.tensor)
-      this.setState({test: act_map})
+      tf.browser.toPixels(this.state.actmap.squeeze().gather([0], 2).cast('int32'), document.getElementById("aCanvas"))
     }catch(error){
       console.log(error)
     }
     try{
+      this.state.actmap.squeeze().gather([0], 2)
       this.setState({test2: model.input})
     }catch(error){
       console.log(error)
@@ -101,8 +110,10 @@ class App extends Component {
           <button onClick={this.loadPic}>loadPic</button>
           <button onClick={this.getTensor}>getTensor</button>
           <button onClick={this.predict}>predict</button>
+          <button onClick={this.activationMap}>actMap</button>
           <button onClick={this.test}>test</button>
           {this.state.predictarray!=undefined ?  <h1>{this.state.predictarray}</h1> : null}
+          <canvas id="aCanvas" width="200" height="100"></canvas>
         </div>
       </div>
     );
