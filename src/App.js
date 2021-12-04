@@ -3,6 +3,8 @@ import logo from './logo.svg';
 import {Image} from "canvas"
 //import './App.css';
 import * as tf from '@tensorflow/tfjs';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button } from 'reactstrap';
 
 class App extends Component {
   constructor(){
@@ -14,6 +16,8 @@ class App extends Component {
       model: undefined,
       predictarray: undefined,
       actmap: undefined,
+      maskedImgArray: undefined,
+      maskedImgArrayprogress: undefined,
       test: undefined,
       test2: undefined,
       test3: undefined
@@ -23,6 +27,7 @@ class App extends Component {
     this.loadModel=this.loadModel.bind(this)
     this.predict=this.predict.bind(this)
     this.activationMap=this.activationMap.bind(this)
+    this.maskedImgArray=this.maskedImgArray.bind(this)
     this.test= this.test.bind(this)
   }
 
@@ -71,48 +76,98 @@ class App extends Component {
     let actMap= await tf.model({inputs: model.input, outputs: model.getLayer("add_5").output}).predict(this.state.tensor)
     let actMapResized= tf.image.resizeBilinear(actMap,[64,64])
     this.setState({actmap: actMapResized})
+    tf.browser.toPixels(this.state.actmap.squeeze().gather([0], 2).squeeze().cast('int32'),document.getElementById("aCanvas"))
+    //tf.browser.toPixels(tf.browser.toPixels(this.state.actmap.squeeze().gather([0], 2).squeeze().cast('int32').mul(this.state.tensor.squeeze().cast('int32')), document.getElementById("aCanvas")))
+    //for i in this.range(this.state.actmap.array()[0][0][0].length){
+      //c
+      //array.aapend up result
+      //
+    //}
+    //
+  }
+  range(start, stop) {
+      if (typeof stop == 'undefined') {
+          stop = start;
+          start = 0;
+      }
+
+      let result = [...Array(stop).keys()].slice(start, stop);
+      return result;
+    }
+
+maskedImgArray()
+  { //this.state.actmap.arraySync()[0][0][0].length
+    let model=this.state.model
+    try
+    {
+      const maskedImgArray=[]
+      const divn= tf.scalar(255)
+      const tensor=this.state.tensor.squeeze().cast('int32')
+      const actmap3d=this.state.actmap.squeeze()
+      const length=this.state.actmap.squeeze().arraySync()[0][0].length
+      for (let i = 0; i < length; i++)
+      {
+        this.setState({maskedImgArrayprogress: i})
+        let maskedImg= actmap3d.gather([i], 2).squeeze().cast('int32').mul(tensor).div(divn)
+        maskedImgArray.push(maskedImg)
+        this.setState({maskedImgArray: maskedImgArray})
+      }
+       //predMIA = softmax(model.predict(masked_input_array))
+    }
+    catch(error)
+    {
+      console.log(error)
+    }
   }
 
   test()
   {
-    let model=this.state.model
-    try{
-      tf.browser.toPixels(this.state.actmap.squeeze().gather([0], 2).cast('int32'), document.getElementById("aCanvas"))
-    }catch(error){
-      console.log(error)
+    const model=this.state.model
+    const buffer=tf.buffer([1024,2])
+    for(let i=0; i<this.state.maskedImgArray.length; i++){
+      let predict=model.predict(this.state.maskedImgArray[i].expandDims(-1).expandDims(0))
+      buffer.set(predict.arraySync()[0], i, 0)
+      buffer.set(predict.arraySync()[1], i, 1)
+      console.log(i+"/1024")
     }
-    try{
-      this.state.actmap.squeeze().gather([0], 2)
-      this.setState({test2: model.input})
-    }catch(error){
-      console.log(error)
-    }
-    try{
-      this.setState({test3: model.getLayer("add_5")})
-    }catch(error){
-      console.log(error)
-    }
+    let test=buffer.toTensor()
+    this.setState({test: test})
   }
 
   render(){
     return (
       <div className="dev">
         <div>
-        {
-          this.state.imguploaded ?
-          <img src={this.state.picurl} id="pic"></img> :
-          null
-        }
-          <input type="file" id="jsonuploads" title="your text" webkitdirectory="" directory="" />
-          <input type="file" id="sharduploads" title="your text" webkitdirectory="" directory="" />
-          <input type="file" id="picuploads" title="your text" />
-          <button onClick={this.loadModel}>loadModel</button>
-          <button onClick={this.loadPic}>loadPic</button>
-          <button onClick={this.getTensor}>getTensor</button>
-          <button onClick={this.predict}>predict</button>
-          <button onClick={this.activationMap}>actMap</button>
-          <button onClick={this.test}>test</button>
-          {this.state.predictarray!=undefined ?  <h1>{this.state.predictarray}</h1> : null}
+
+
+          <div className="input-group">
+            <input type="file" className="form-control" id="jsonuploads" aria-describedby="inputGroupFileAddon04" aria-label="Upload" />
+          </div>
+          <br></br>
+          <div className="input-group">
+            <input type="file" class="form-control" id="sharduploads" multiple aria-describedby="inputGroupFileAddon04" aria-label="Upload" />
+            <button className="btn btn-outline-secondary" onClick={this.loadModel} type="button" id="inputGroupFileAddon04">loadModel</button>
+          </div>
+          <br></br>
+          <div className="input-group">
+            <input type="file" class="form-control" id="picuploads" aria-describedby="inputGroupFileAddon04" aria-label="Upload" />
+            <button className="btn btn-outline-secondary" onClick={this.loadPic} type="button" id="inputGroupFileAddon04">&nbsp;loadPic&nbsp;</button>
+          </div>
+          {
+            this.state.imguploaded ?
+            <div><br></br><img src={this.state.picurl} id="pic"></img><br></br></div> :
+            null
+          }
+
+          <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-secondary btn-sm" onClick={this.getTensor}>getTensor</button>
+            <button type="button" class="btn btn-secondary btn-sm" onClick={this.predict}>predict</button>
+            <button type="button" class="btn btn-secondary btn-sm" onClick={this.activationMap}>actMap</button>
+            <button type="button" class="btn btn-secondary btn-sm" onClick={this.maskedImgArray}>maskedImgArray</button>
+            <button type="button" class="btn btn-secondary btn-sm" onClick={this.test}>test</button>
+          </div>
+
+          {this.state.predictarray!==undefined ?  <h1>{this.state.predictarray}</h1> : null}
           <canvas id="aCanvas" width="200" height="100"></canvas>
         </div>
       </div>
